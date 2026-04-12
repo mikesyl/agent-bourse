@@ -232,12 +232,12 @@ def parse_claude_recommendations(analysis_text: str) -> list[dict]:
     """
     recommendations = []
 
-    # Pattern : "NOM (TICKER.PA) — Prix actuel : XXX€"
+    # Pattern : "NOM (TICKER.PA) — Prix actuel : XXX€" (avec ou sans ** Markdown)
     stock_pattern = re.compile(
-        r'[1-3]️⃣\s+(.+?)\s*\(([A-Z]+\.PA)\)\s*[—-]\s*Prix actuel\s*:\s*([\d,\.]+)\s*€',
+        r'[1-3️⃣\d]+[️⃣]?\s+\*{0,2}(.+?)\*{0,2}\s*\(([A-Z]+\.PA)\)\*{0,2}\s*[—-]\s*Prix actuel\s*:\s*([\d,\.]+)\s*€',
         re.IGNORECASE
     )
-    # Pattern : "Objectif 3 mois : XXX€"
+    # Pattern : "Objectif X mois : XXX€"
     target_pattern = re.compile(
         r'Objectif\s+\d\s+mois\s*:\s*([\d,\.]+)\s*€',
         re.IGNORECASE
