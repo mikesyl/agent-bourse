@@ -35,10 +35,24 @@ def get_sheet():
         spreadsheet = client.open(SHEET_NAME)
     except gspread.SpreadsheetNotFound:
         spreadsheet = client.create(SHEET_NAME)
-        # Partager en lecture avec l'email owner si fourni
-        owner = os.environ.get("GMAIL_USER")
+        # Partager avec GMAIL_USER et EMAIL_TO
+        for email_var in ["GMAIL_USER", "EMAIL_TO"]:
+            owner = os.environ.get(email_var)
+            if owner:
+                try:
+                    spreadsheet.share(owner, perm_type="user", role="writer", notify=False)
+                    print(f"  ✅ Sheet partagée avec {owner}")
+                except Exception as e:
+                    print(f"  ⚠️ Partage impossible avec {owner}: {e}")
+
+    # Forcer le partage à chaque run (idempotent)
+    for email_var in ["GMAIL_USER", "EMAIL_TO"]:
+        owner = os.environ.get(email_var)
         if owner:
-            spreadsheet.share(owner, perm_type="user", role="writer")
+            try:
+                spreadsheet.share(owner, perm_type="user", role="writer", notify=False)
+            except Exception:
+                pass
 
     worksheets = [ws.title for ws in spreadsheet.worksheets()]
 
