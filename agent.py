@@ -5,6 +5,7 @@ from datetime import datetime
 from technical import get_technical_analysis, TICKERS_FR
 from news import get_news_for_ticker, get_market_context
 from email_sender import send_email
+from tracker import parse_claude_recommendations, add_recommendation, update_prices, get_tracking_table
 
 def collect_all_data():
     """Collecte et score toutes les actions de l'univers"""
@@ -19,12 +20,11 @@ def collect_all_data():
             results.append(data)
             print(f"  ✓ {ticker:10s} | score={data['score_technique']:3d} | RSI={data['rsi']:5.1f} | {data['tendance']}")
 
-    # Trier par score technique décroissant
     results.sort(key=lambda x: x['score_technique'], reverse=True)
-    return results[:8]  # Top 8 envoyés à Claude pour analyse finale
+    return results[:8]
 
 def analyze_with_claude(data, market_context):
-    """Analyse Claude 100% gratuite via API Anthropic"""
+    """Analyse Claude via API Anthropic"""
     client = anthropic.Anthropic(api_key=os.environ['ANTHROPIC_API_KEY'])
 
     date_str = datetime.now().strftime("%A %d %B %Y")
@@ -40,7 +40,7 @@ Voici les données techniques et fondamentales des actions pré-sélectionnées 
 
 MISSION : Sélectionne les 3 meilleures opportunités d'achat avec un potentiel de +10% minimum à 3 mois.
 
-Pour chaque action, fournis :
+Pour chaque action, fournis EXACTEMENT ce format (respect strict des tirets et emojis) :
 1️⃣ / 2️⃣ / 3️⃣ NOM (TICKER.PA) — Prix actuel : XXX€
 🎯 Objectif 3 mois : XXX€ (+XX%)
 📈 Technique : RSI XX | MACD [signal] | Tendance [tendance]
@@ -48,7 +48,7 @@ Pour chaque action, fournis :
 ✅ Catalyseur 2 : [raison concrète]
 ⚠️ Risque : [Faible/Modéré/Élevé] — Stop-loss suggéré : XXX€
 
-FORMAT :
+FORMAT GLOBAL :
 - Commence par "📊 Analyse du {date_str}"
 - Une ligne vide entre chaque action
 - Termine par "⚠️ Pas un conseil financier. DYOR."
@@ -56,12 +56,13 @@ FORMAT :
 """
 
     response = client.messages.create(
-        model="claude-opus-4-5",   # Modèle gratuit disponible
+        model="claude-opus-4-5",
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}]
     )
 
     return response.content[0].text
+
 
 def run():
     print(f"\n{'='*55}")
@@ -80,16 +81,46 @@ def run():
     print("🤖 Analyse Claude en cours...")
     analysis = analyze_with_claude(top_stocks, market_context)
 
-    # 4. Envoi email
-    print("\n📧 Envoi de l'email...")
-    send_email(analysis)
+    # 4. Mise à jour des prix des positions ouvertes
+    print("\n📋 Mise à jour du tracker...")
+    try:
+        update_prices()
+    except Exception as e:
+        print(f"  ⚠️ Erreur mise à jour tracker: {e}")
 
-    # 5. Affichage du résultat
+    # 5. Enregistrement des nouvelles recommandations
+    print("\n💾 Enregistrement des recommandations...")
+    try:
+        recos = parse_claude_recommendations(analysis)
+        for reco in recos:
+            add_recommendation(
+                ticker=reco['ticker'],
+                nom=reco['nom'],
+                prix_achat=reco['prix_achat'],
+                target=reco['target'],
+                stop_loss=reco['stop_loss'],
+            )
+    except Exception as e:
+        print(f"  ⚠️ Erreur enregistrement recommandations: {e}")
+
+    # 6. Lecture du tableau de suivi pour l'email
+    tracking_table = []
+    try:
+        tracking_table = get_tracking_table()
+    except Exception as e:
+        print(f"  ⚠️ Erreur lecture tracker: {e}")
+
+    # 7. Envoi email
+    print("\n📧 Envoi de l'email...")
+    send_email(analysis, tracking_table)
+
+    # 8. Affichage console
     print(f"\n{'='*55}")
     print("  ✅ ANALYSE DU JOUR")
     print(f"{'='*55}")
     print(analysis)
     print(f"{'='*55}\n")
+
 
 if __name__ == "__main__":
     run()
