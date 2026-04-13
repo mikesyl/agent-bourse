@@ -1,6 +1,7 @@
 import anthropic
 import json
 import os
+import traceback
 from datetime import datetime
 from technical import get_technical_analysis, TICKERS_FR
 from news import get_news_for_ticker, get_market_context
@@ -8,10 +9,8 @@ from email_sender import send_email
 from tracker import parse_claude_recommendations, add_recommendation, update_prices, get_tracking_table
 
 def collect_all_data():
-    """Collecte et score toutes les actions de l'univers"""
     print("📊 Collecte des données techniques...")
     results = []
-
     for ticker in TICKERS_FR:
         data = get_technical_analysis(ticker)
         if data:
@@ -19,17 +18,13 @@ def collect_all_data():
             data['actualites'] = [n['titre'] for n in news]
             results.append(data)
             print(f"  ✓ {ticker:10s} | score={data['score_technique']:3d} | RSI={data['rsi']:5.1f} | {data['tendance']}")
-
     results.sort(key=lambda x: x['score_technique'], reverse=True)
     return results[:8]
 
 def analyze_with_claude(data, market_context):
-    """Analyse Claude via API Anthropic"""
     client = anthropic.Anthropic(api_key=os.environ['ANTHROPIC_API_KEY'])
-
     date_str = datetime.now().strftime("%A %d %B %Y")
     data_str = json.dumps(data, ensure_ascii=False, indent=2)
-
     prompt = f"""Tu es un analyste financier senior spécialisé sur les marchés boursiers français (Euronext Paris).
 
 Date d'analyse : {date_str}
@@ -54,13 +49,11 @@ FORMAT GLOBAL :
 - Termine par "⚠️ Pas un conseil financier. DYOR."
 - Sois concis mais précis — max 600 mots
 """
-
     response = client.messages.create(
         model="claude-opus-4-5",
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}]
     )
-
     return response.content[0].text
 
 
@@ -69,33 +62,28 @@ def run():
     print(f"  🚀 AGENT BOURSE — {datetime.now().strftime('%d/%m/%Y %H:%M')}")
     print(f"{'='*55}\n")
 
-    # 1. Contexte marché
     market_context = get_market_context()
     print(f"📈 Marché : {market_context}\n")
 
-    # 2. Collecte et scoring technique
     top_stocks = collect_all_data()
     print(f"\n🔍 {len(top_stocks)} actions sélectionnées pour analyse Claude\n")
 
-    # 3. Analyse IA
     print("🤖 Analyse Claude en cours...")
     analysis = analyze_with_claude(top_stocks, market_context)
 
-    # 4. Mise à jour des prix des positions ouvertes
     print("\n📋 Mise à jour du tracker...")
     try:
         update_prices()
-   except Exception as e:
-            import traceback
-            print(f"  ❌ Erreur mise à jour tracker: {e}")
-            print(traceback.format_exc())
+    except Exception as e:
+        print(f"  ❌ Erreur mise à jour tracker: {e}")
+        print(traceback.format_exc())
 
-    # 5. Enregistrement des nouvelles recommandations
     print("\n💾 Enregistrement des recommandations...")
     try:
         recos = parse_claude_recommendations(analysis)
         print(f"  🔍 {len(recos)} recommandation(s) parsée(s)")
         for reco in recos:
+            print(f"  → {reco['ticker']} | achat={reco['prix_achat']} | target={reco['target']}")
             add_recommendation(
                 ticker=reco['ticker'],
                 nom=reco['nom'],
@@ -104,22 +92,20 @@ def run():
                 stop_loss=reco['stop_loss'],
             )
     except Exception as e:
-            import traceback
-            print(f"  ❌ Erreur enregistrement recommandations: {e}")
-            print(traceback.format_exc())
+        print(f"  ❌ Erreur enregistrement recommandations: {e}")
+        print(traceback.format_exc())
 
-    # 6. Lecture du tableau de suivi pour l'email
     tracking_table = []
     try:
         tracking_table = get_tracking_table()
+        print(f"  📊 {len(tracking_table)} ligne(s) dans le tracker")
     except Exception as e:
-        print(f"  ⚠️ Erreur lecture tracker: {e}")
+        print(f"  ❌ Erreur lecture tracker: {e}")
+        print(traceback.format_exc())
 
-    # 7. Envoi email
     print("\n📧 Envoi de l'email...")
     send_email(analysis, tracking_table)
 
-    # 8. Affichage console
     print(f"\n{'='*55}")
     print("  ✅ ANALYSE DU JOUR")
     print(f"{'='*55}")
