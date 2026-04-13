@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    steps:
+steps:
       - name: Checkout du code
         uses: actions/checkout@v4
 
