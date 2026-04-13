@@ -105,7 +105,7 @@ def run():
         print(traceback.format_exc())
 
     print("\n📧 Envoi de l'email...")
-    send_email(analysis, tracking_table)
+    send_email(analysis)
 
     print(f"\n{'='*55}")
     print("  ✅ ANALYSE DU JOUR")
