@@ -29,4 +29,12 @@ jobs:
           GMAIL_USER:          ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
           EMAIL_TO:            ${{ secrets.EMAIL_TO }}
-        run: python agent
+          
+          - name: Sauvegarde du tracker CSV
+        run: |
+          git config user.name "Agent Bourse Bot"
+          git config user.email "bot@agent-bourse.com"
+          git add historique.csv || true
+          git diff --staged --quiet || git commit -m "Mise a jour tracker"
+          git push || true
+        run: python agent.py
