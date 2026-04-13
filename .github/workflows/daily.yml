@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-        steps:
+    steps:
       - name: Checkout du code
         uses: actions/checkout@v4
 
@@ -25,16 +25,16 @@ jobs:
 
       - name: Lancement de l'agent
         env:
-          ANTHROPIC_API_KEY:  ${{ secrets.ANTHROPIC_API_KEY }}
-          GMAIL_USER:         ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          EMAIL_TO:           ${{ secrets.EMAIL_TO }}
-       run: python agent.py
-       
+          ANTHROPIC_API_KEY:   ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_USER:          ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
+          EMAIL_TO:            ${{ secrets.EMAIL_TO }}
+        run: python agent.py
+
       - name: Sauvegarde du tracker CSV
         run: |
           git config user.name "Agent Bourse Bot"
           git config user.email "bot@agent-bourse.com"
           git add historique.csv || true
-          git diff --staged --quiet || git commit -m "Mise a jour tracker"
+          git diff --staged --quiet || git commit -m "📊 Mise à jour tracker $(date +'%d/%m/%Y')"
           git push || true
