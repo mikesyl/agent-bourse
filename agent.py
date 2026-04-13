@@ -2,6 +2,7 @@ import anthropic
 import json
 import os
 import traceback
+print("VERSION TRACKER OK")
 from datetime import datetime
 from technical import get_technical_analysis, TICKERS_FR
 from news import get_news_for_ticker, get_market_context
