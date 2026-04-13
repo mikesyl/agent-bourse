@@ -37,5 +37,5 @@ jobs:
           git config user.name "Agent Bourse Bot"
           git config user.email "bot@agent-bourse.com"
           git add historique.csv || true
-          git diff --staged --quiet || git commit -m "Mise a jour tracker"
+          git commit -m "Mise a jour tracker" || echo "Rien a commiter"
           git push || true
