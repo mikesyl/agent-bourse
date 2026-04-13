@@ -145,3 +145,5 @@ tu as du crédit disponible sur [console.anthropic.com](https://console.anthropi
 ⚠️ **Avertissement** : Cet outil est fourni à titre éducatif.
 Les analyses générées ne constituent pas des conseils en investissement.
 Investir en bourse comporte des risques de perte en capital.
+
+Mis à jour le 13/04/2026
