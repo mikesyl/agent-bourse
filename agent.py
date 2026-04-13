@@ -85,8 +85,10 @@ def run():
     print("\n📋 Mise à jour du tracker...")
     try:
         update_prices()
-    except Exception as e:
-        print(f"  ⚠️ Erreur mise à jour tracker: {e}")
+   except Exception as e:
+            import traceback
+            print(f"  ❌ Erreur mise à jour tracker: {e}")
+            print(traceback.format_exc())
 
     # 5. Enregistrement des nouvelles recommandations
     print("\n💾 Enregistrement des recommandations...")
@@ -101,7 +103,9 @@ def run():
                 stop_loss=reco['stop_loss'],
             )
     except Exception as e:
-        print(f"  ⚠️ Erreur enregistrement recommandations: {e}")
+            import traceback
+            print(f"  ❌ Erreur enregistrement recommandations: {e}")
+            print(traceback.format_exc())
 
     # 6. Lecture du tableau de suivi pour l'email
     tracking_table = []
