@@ -94,6 +94,7 @@ def run():
     print("\n💾 Enregistrement des recommandations...")
     try:
         recos = parse_claude_recommendations(analysis)
+        print(f"  🔍 {len(recos)} recommandation(s) parsée(s)")
         for reco in recos:
             add_recommendation(
                 ticker=reco['ticker'],
