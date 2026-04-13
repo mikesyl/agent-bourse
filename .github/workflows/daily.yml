@@ -1,4 +1,4 @@
-name: Agent Bourse Quotidien
+name: Agent Bourse v3
 
 on:
   schedule:
