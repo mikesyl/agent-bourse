@@ -2,7 +2,7 @@ name: Bourse Agent Daily
 
 on:
   schedule:
-    - cron: '25 8 * * *'
+    - cron: '29 8 * * *'
   workflow_dispatch:
 
 jobs:
@@ -24,20 +24,20 @@ jobs:
 
       - name: Lancement de l'agent
         env:
-          ANTHROPIC_API_KEY:   ${{ secrets.ANTHROPIC_API_KEY }}
-          GMAIL_USER:          ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
-          EMAIL_TO:            ${{ secrets.EMAIL_TO }}
+          ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_USER:           ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:   ${{ secrets.GMAIL_APP_PASSWORD }}
+          EMAIL_TO:             ${{ secrets.EMAIL_TO }}
         run: |
           python -c "import tracker; print('TRACKER OK')"
           python agent.py
-          
+
       - name: Sauvegarde du tracker CSV
-       run: |
-        git config user.name "Agent Bourse Bot"
-        git config user.email "bot@agent-bourse.com"
-        git fetch origin main
-        git checkout origin/main -- . 2>/dev/null || true
-        git add historique.csv
-        git commit -m "Mise a jour tracker" || echo "Rien a commiter"
-        git push
+        run: |
+          git config user.name "Agent Bourse Bot"
+          git config user.email "bot@agent-bourse.com"
+          git fetch origin main
+          git checkout origin/main -- . 2>/dev/null || true
+          git add historique.csv
+          git commit -m "Mise a jour tracker" || echo "Rien a commiter"
+          git push
