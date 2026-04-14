@@ -2,7 +2,7 @@ name: Bourse Agent Daily
 
 on:
   schedule:
-    - cron: '40 9 * * *'
+    - cron: '59 9 * * *'
   workflow_dispatch:
 
 permissions:
