@@ -33,10 +33,11 @@ jobs:
           python agent.py
           
       - name: Sauvegarde du tracker CSV
-        run: |
-          git config user.name "Agent Bourse Bot"
-          git config user.email "bot@agent-bourse.com"
-          git pull --rebase origin main
-          git add historique.csv || true
-          git commit -m "Mise a jour tracker" || echo "Rien a commiter"
-          git push
+      run: |
+        git config user.name "Agent Bourse Bot"
+        git config user.email "bot@agent-bourse.com"
+        git fetch origin main
+        git checkout origin/main -- . 2>/dev/null || true
+        git add historique.csv
+        git commit -m "Mise a jour tracker" || echo "Rien a commiter"
+        git push
