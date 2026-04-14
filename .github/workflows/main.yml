@@ -1,4 +1,4 @@
-Zname: Bourse Agent Daily
+name: Bourse Agent Daily
 
 on:
   schedule:
