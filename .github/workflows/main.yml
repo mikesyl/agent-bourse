@@ -2,7 +2,7 @@ name: Bourse Agent Daily
 
 on:
   schedule:
-    - cron: '0 7 * * 1-5'
+- cron: '25 8 * * *'
   workflow_dispatch:
 
 jobs:
