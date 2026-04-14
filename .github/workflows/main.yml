@@ -33,7 +33,7 @@ jobs:
           python agent.py
           
       - name: Sauvegarde du tracker CSV
-      run: |
+       run: |
         git config user.name "Agent Bourse Bot"
         git config user.email "bot@agent-bourse.com"
         git fetch origin main
