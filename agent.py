@@ -1,13 +1,19 @@
-# v2
+# v3
 import anthropic
 import json
 import os
+import sys
 import traceback
 from datetime import datetime
 from technical import get_technical_analysis, TICKERS_FR
 from news import get_news_for_ticker, get_market_context
 from email_sender import send_email
 from tracker import parse_claude_recommendations, add_recommendation, update_prices, get_tracking_table
+
+# Bloquer les week-ends
+if datetime.now().weekday() >= 5:
+    print("Weekend — marchés fermés, pas d'analyse.")
+    sys.exit(0)
 
 def collect_all_data():
     print("📊 Collecte des données techniques...")
@@ -105,7 +111,7 @@ def run():
         print(traceback.format_exc())
 
     print("\n📧 Envoi de l'email...")
-    send_email(analysis)
+    send_email(analysis, tracking_table)
 
     print(f"\n{'='*55}")
     print("  ✅ ANALYSE DU JOUR")
@@ -116,3 +122,4 @@ def run():
 
 if __name__ == "__main__":
     run()
+    
